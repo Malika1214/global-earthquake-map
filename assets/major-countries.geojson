@@ -1,0 +1,126 @@
+
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 1,
+        "name": "United States",
+        "continent": "North America",
+        "area": 9833517
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-125, 50], [-125, 25], [-65, 25], [-65, 50], [-125, 50]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 2,
+        "name": "Brazil",
+        "continent": "South America",
+        "area": 8515767
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-73, 5], [-73, -33], [-35, -33], [-35, 5], [-73, 5]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 3,
+        "name": "Russia",
+        "continent": "Europe/Asia",
+        "area": 17098242
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [20, 80], [20, 40], [180, 40], [180, 80], [20, 80]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 4,
+        "name": "China",
+        "continent": "Asia",
+        "area": 9596961
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [73, 53], [73, 18], [135, 18], [135, 53], [73, 53]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 5,
+        "name": "Australia",
+        "continent": "Oceania",
+        "area": 7692024
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [113, -10], [113, -44], [154, -44], [154, -10], [113, -10]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 6,
+        "name": "India",
+        "continent": "Asia",
+        "area": 3287263
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [68, 35], [68, 8], [97, 8], [97, 35], [68, 35]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 7,
+        "name": "Argentina",
+        "continent": "South America",
+        "area": 2780400
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-73, -21], [-73, -55], [-53, -55], [-53, -21], [-73, -21]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": 8,
+        "name": "Canada",
+        "continent": "North America",
+        "area": 9984670
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-141, 83], [-141, 42], [-52, 42], [-52, 83], [-141, 83]
+        ]]
+      }
+    }
+  ]
+}
