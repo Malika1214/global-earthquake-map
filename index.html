@@ -5,9 +5,9 @@
     <title>Global Cities & Countries Map</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
     
-    <!-- Mapbox GL JS -->
-    <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
-    <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
+    <!-- MapLibre GL JS -->
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet">
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
     
     <style>
         * {
@@ -117,7 +117,6 @@
             color: #2c3e50;
         }
 
-        /* Scrollbar styling */
         #side-panel::-webkit-scrollbar {
             width: 8px;
         }
@@ -136,15 +135,7 @@
             background: #555;
         }
 
-        /* Responsive Design - Hide panel on smaller screens */
         @media screen and (max-width: 1024px) {
-            #side-panel {
-                display: none;
-            }
-        }
-
-        /* Mobile adjustments */
-        @media screen and (max-width: 768px) {
             #side-panel {
                 display: none;
             }
@@ -174,82 +165,76 @@
     </div>
 
     <script>
-        // Mapbox access token
-        mapboxgl.accessToken = 'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5icTFxZ3ZkdncifQ.P9MBej1xacybKcDN_jehvw';
-
-        // Create map instance with dark style
-        let map = new mapboxgl.Map({
+        const map = new maplibregl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/dark-v10', // Different style from earthquake map
+            center: [0, 20],
             zoom: 2,
-            center: [0, 20]
+            style: {
+                version: 8,
+                sources: {
+                    'dark-tiles': {
+                        type: 'raster',
+                        tiles: ['https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}.png'],
+                        tileSize: 256,
+                        attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a>'
+                    }
+                },
+                layers: [{
+                    id: 'dark-tiles',
+                    type: 'raster',
+                    source: 'dark-tiles'
+                }]
+            }
         });
 
-        // Add navigation controls
-        map.addControl(new mapboxgl.NavigationControl(), 'top-left');
+        map.addControl(new maplibregl.NavigationControl(), 'top-left');
 
-        // Load GeoJSON data asynchronously
         async function geojsonFetch() {
             let response, cities, countries, table;
 
-            // Fetch cities data
             response = await fetch('assets/world-cities.geojson');
             cities = await response.json();
 
-            // Fetch countries data
             response = await fetch('assets/major-countries.geojson');
             countries = await response.json();
 
-            // Load data to the map as new layers
             map.on('load', function loadingData() {
-                // Add countries source
                 map.addSource('countries', {
                     type: 'geojson',
                     data: countries
                 });
 
-                // Add countries layer
                 map.addLayer({
-                    'id': 'countries-layer',
-                    'type': 'fill',
-                    'source': 'countries',
-                    'paint': {
+                    id: 'countries-layer',
+                    type: 'fill',
+                    source: 'countries',
+                    paint: {
                         'fill-color': '#3498db',
                         'fill-opacity': 0.3
                     }
                 });
 
-                // Add countries outline
                 map.addLayer({
-                    'id': 'countries-outline',
-                    'type': 'line',
-                    'source': 'countries',
-                    'paint': {
+                    id: 'countries-outline',
+                    type: 'line',
+                    source: 'countries',
+                    paint: {
                         'line-color': '#2980b9',
                         'line-width': 2
                     }
                 });
 
-                // Add cities source
                 map.addSource('cities', {
                     type: 'geojson',
                     data: cities
                 });
 
-                // Add cities layer
                 map.addLayer({
-                    'id': 'cities-layer',
-                    'type': 'circle',
-                    'source': 'cities',
-                    'paint': {
-                        'circle-radius': [
-                            'interpolate',
-                            ['linear'],
-                            ['get', 'population'],
-                            1000000, 6,
-                            10000000, 10,
-                            40000000, 16
-                        ],
+                    id: 'cities-layer',
+                    type: 'circle',
+                    source: 'cities',
+                    paint: {
+                        'circle-radius': 10,
                         'circle-color': '#e74c3c',
                         'circle-stroke-width': 2,
                         'circle-stroke-color': '#ffffff',
@@ -257,24 +242,18 @@
                     }
                 });
 
-                // Add popup on click
                 map.on('click', 'cities-layer', function(e) {
                     let coordinates = e.features[0].geometry.coordinates.slice();
                     let name = e.features[0].properties.name;
                     let country = e.features[0].properties.country;
                     let population = e.features[0].properties.population.toLocaleString();
 
-                    new mapboxgl.Popup()
+                    new maplibregl.Popup()
                         .setLngLat(coordinates)
-                        .setHTML(`
-                            <strong>${name}</strong><br>
-                            ${country}<br>
-                            Population: ${population}
-                        `)
+                        .setHTML('<strong>' + name + '</strong><br>' + country + '<br>Population: ' + population)
                         .addTo(map);
                 });
 
-                // Change cursor on hover
                 map.on('mouseenter', 'cities-layer', function() {
                     map.getCanvas().style.cursor = 'pointer';
                 });
@@ -284,8 +263,7 @@
                 });
             });
 
-            // Generate table
-            table = document.querySelector("table tbody");
+            table = document.querySelector('table tbody');
             let row, cell1, cell2, cell3, cell4;
             
             for (let i = 0; i < cities.features.length; i++) {
@@ -301,16 +279,14 @@
                 cell4.innerHTML = cities.features[i].properties.population.toLocaleString();
             }
 
-            // Sort table functionality
-            let btn = document.querySelector("button");
+            let btn = document.querySelector('button');
             btn.addEventListener('click', sortTable);
         }
 
-        // Function to sort table by population
-        function sortTable(e) {
-            let table, rows, switching, i, x, y, shouldSwitch;
-            table = document.querySelector("table");
-            switching = true;
+        function sortTable() {
+            let table = document.querySelector('table');
+            let switching = true;
+            let rows, i, x, y, shouldSwitch;
 
             while (switching) {
                 switching = false;
@@ -319,11 +295,9 @@
                 for (i = 1; i < (rows.length - 1); i++) {
                     shouldSwitch = false;
                     
-                    // Get population values (remove commas and parse)
-                    x = parseInt(rows[i].getElementsByTagName("td")[3].innerHTML.replace(/,/g, ''));
-                    y = parseInt(rows[i + 1].getElementsByTagName("td")[3].innerHTML.replace(/,/g, ''));
+                    x = parseInt(rows[i].getElementsByTagName('td')[3].innerHTML.replace(/,/g, ''));
+                    y = parseInt(rows[i + 1].getElementsByTagName('td')[3].innerHTML.replace(/,/g, ''));
 
-                    // Sort in descending order (highest population first)
                     if (x < y) {
                         shouldSwitch = true;
                         break;
@@ -337,7 +311,6 @@
             }
         }
 
-        // Call the async function
         geojsonFetch();
     </script>
 </body>
