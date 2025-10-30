@@ -1,1 +1,344 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="utf-8">
+    <title>Global Cities & Countries Map</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+    
+    <!-- Mapbox GL JS -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #map {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        #side-panel {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 400px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 2;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 24px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        button {
+            margin-bottom: 15px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            width: 100%;
+            border: 1px solid #e0e0e0;
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px;
+            font-size: 13px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #e3f2fd;
+            cursor: pointer;
+        }
+
+        td {
+            color: #2c3e50;
+        }
+
+        /* Scrollbar styling */
+        #side-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        #side-panel::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        #side-panel::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        #side-panel::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Responsive Design - Hide panel on smaller screens */
+        @media screen and (max-width: 1024px) {
+            #side-panel {
+                display: none;
+            }
+        }
+
+        /* Mobile adjustments */
+        @media screen and (max-width: 768px) {
+            #side-panel {
+                display: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    
+    <div id="side-panel">
+        <h2>Major World Cities</h2>
+        <button>Sort by Population</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>City</th>
+                    <th>Country</th>
+                    <th>Population</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Mapbox access token
+        mapboxgl.accessToken = 'pk.eyJ1IjoiamFrb2J6aGFvIiwiYSI6ImNpcms2YWsyMzAwMmtmbG5icTFxZ3ZkdncifQ.P9MBej1xacybKcDN_jehvw';
+
+        // Create map instance with dark style
+        let map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/dark-v10', // Different style from earthquake map
+            zoom: 2,
+            center: [0, 20]
+        });
+
+        // Add navigation controls
+        map.addControl(new mapboxgl.NavigationControl(), 'top-left');
+
+        // Load GeoJSON data asynchronously
+        async function geojsonFetch() {
+            let response, cities, countries, table;
+
+            // Fetch cities data
+            response = await fetch('assets/world-cities.geojson');
+            cities = await response.json();
+
+            // Fetch countries data
+            response = await fetch('assets/major-countries.geojson');
+            countries = await response.json();
+
+            // Load data to the map as new layers
+            map.on('load', function loadingData() {
+                // Add countries source
+                map.addSource('countries', {
+                    type: 'geojson',
+                    data: countries
+                });
+
+                // Add countries layer
+                map.addLayer({
+                    'id': 'countries-layer',
+                    'type': 'fill',
+                    'source': 'countries',
+                    'paint': {
+                        'fill-color': '#3498db',
+                        'fill-opacity': 0.3
+                    }
+                });
+
+                // Add countries outline
+                map.addLayer({
+                    'id': 'countries-outline',
+                    'type': 'line',
+                    'source': 'countries',
+                    'paint': {
+                        'line-color': '#2980b9',
+                        'line-width': 2
+                    }
+                });
+
+                // Add cities source
+                map.addSource('cities', {
+                    type: 'geojson',
+                    data: cities
+                });
+
+                // Add cities layer
+                map.addLayer({
+                    'id': 'cities-layer',
+                    'type': 'circle',
+                    'source': 'cities',
+                    'paint': {
+                        'circle-radius': [
+                            'interpolate',
+                            ['linear'],
+                            ['get', 'population'],
+                            1000000, 6,
+                            10000000, 10,
+                            40000000, 16
+                        ],
+                        'circle-color': '#e74c3c',
+                        'circle-stroke-width': 2,
+                        'circle-stroke-color': '#ffffff',
+                        'circle-opacity': 0.8
+                    }
+                });
+
+                // Add popup on click
+                map.on('click', 'cities-layer', function(e) {
+                    let coordinates = e.features[0].geometry.coordinates.slice();
+                    let name = e.features[0].properties.name;
+                    let country = e.features[0].properties.country;
+                    let population = e.features[0].properties.population.toLocaleString();
+
+                    new mapboxgl.Popup()
+                        .setLngLat(coordinates)
+                        .setHTML(`
+                            <strong>${name}</strong><br>
+                            ${country}<br>
+                            Population: ${population}
+                        `)
+                        .addTo(map);
+                });
+
+                // Change cursor on hover
+                map.on('mouseenter', 'cities-layer', function() {
+                    map.getCanvas().style.cursor = 'pointer';
+                });
+
+                map.on('mouseleave', 'cities-layer', function() {
+                    map.getCanvas().style.cursor = '';
+                });
+            });
+
+            // Generate table
+            table = document.querySelector("table tbody");
+            let row, cell1, cell2, cell3, cell4;
+            
+            for (let i = 0; i < cities.features.length; i++) {
+                row = table.insertRow(-1);
+                cell1 = row.insertCell(0);
+                cell2 = row.insertCell(1);
+                cell3 = row.insertCell(2);
+                cell4 = row.insertCell(3);
+                
+                cell1.innerHTML = cities.features[i].properties.id;
+                cell2.innerHTML = cities.features[i].properties.name;
+                cell3.innerHTML = cities.features[i].properties.country;
+                cell4.innerHTML = cities.features[i].properties.population.toLocaleString();
+            }
+
+            // Sort table functionality
+            let btn = document.querySelector("button");
+            btn.addEventListener('click', sortTable);
+        }
+
+        // Function to sort table by population
+        function sortTable(e) {
+            let table, rows, switching, i, x, y, shouldSwitch;
+            table = document.querySelector("table");
+            switching = true;
+
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    
+                    // Get population values (remove commas and parse)
+                    x = parseInt(rows[i].getElementsByTagName("td")[3].innerHTML.replace(/,/g, ''));
+                    y = parseInt(rows[i + 1].getElementsByTagName("td")[3].innerHTML.replace(/,/g, ''));
+
+                    // Sort in descending order (highest population first)
+                    if (x < y) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                }
+
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
+            }
+        }
+
+        // Call the async function
+        geojsonFetch();
+    </script>
+</body>
+</html>
