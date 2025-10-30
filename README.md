@@ -1,7 +1,7 @@
 
 # Global Earthquake Map
 
-An interactive web mapping application visualizing global seismic activity and world cities using GeoJSON data and Mapbox GL JS.
+An interactive web mapping application visualizing global seismic activity and world cities using GeoJSON data and Mapbox GL JS. 
 
 ## Features
 
